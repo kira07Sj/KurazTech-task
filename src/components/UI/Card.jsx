@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Icon } from '@iconify/react/dist/iconify.js';
 
 export default function Card({ task, onDelete, onEdit }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -81,7 +82,7 @@ export default function Card({ task, onDelete, onEdit }) {
               onClick={() => setIsEditing(true)}
               className="px-2 py-1 text-blue-600 hover:text-blue-800 text-sm"
             >
-              Edit
+              <Icon icon="fluent:pen-20-filled" width="20" height="20" />
             </button>
             <button
               onClick={() => onDelete(task.id)}
