@@ -62,15 +62,16 @@ function TaskForm({ onAddTask }) {
     <div>
       <button
         onClick={() => setIsOpen(true)}
-        className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+        className="flex items-center gap-2 bg-blue-600 text-white text-[12px] md:text-[16px] px-4 py-2 rounded-md hover:bg-blue-700 w-[120px] md:w-[130px]
+        "
       >
         <Icon icon={addIcon} width="20" />
         Add Task
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md relative">
+        <div className="fixed inset-0 backdrop-blur-md bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md relative scale-75 md:scale-100">
             <button
               onClick={() => setIsOpen(false)}
               className="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
@@ -78,7 +79,7 @@ function TaskForm({ onAddTask }) {
               <Icon icon={closeIcon} width="24" />
             </button>
             <h2 className="text-xl font-semibold mb-4">Add New Task</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4 ">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Title</label>
                 <input

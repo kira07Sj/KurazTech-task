@@ -4,12 +4,15 @@ import { Icon } from '@iconify/react/dist/iconify.js';
 export default function Card({ task, onDelete, onEdit }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedTask, setEditedTask] = useState({
-    title: task.title,
+    title: task.title || '',
     description: task.description || '',
     status: task.status || 'Not Started',
     priority: task.priority || 'Medium',
     dueDate: task.dueDate || '',
-    labels: task.labels ? [...task.labels] : []
+    assignee: task.assignee || '',
+    labels: task.labels ? [...task.labels] : [],
+    progress: task.progress || 0,
+    isPinned: task.isPinned || false,
   });
 
   // Status and priority options
@@ -20,34 +23,49 @@ export default function Card({ task, onDelete, onEdit }) {
   const statusColors = {
     'Not Started': 'bg-gray-100 text-gray-800',
     'In Progress': 'bg-blue-100 text-blue-800',
-    'Completed': 'bg-green-100 text-green-800'
+    'Completed': 'bg-green-100 text-green-800',
   };
 
   const priorityColors = {
-    'Low': 'bg-gray-100 text-gray-800',
-    'Medium': 'bg-yellow-100 text-yellow-800',
-    'High': 'bg-orange-100 text-orange-800',
-    'Critical': 'bg-red-100 text-red-800'
+    Low: 'bg-gray-100 text-gray-800',
+    Medium: 'bg-yellow-100 text-yellow-800',
+    High: 'bg-orange-100 text-orange-800',
+    Critical: 'bg-red-100 text-red-800',
   };
 
   const handleSave = () => {
     onEdit({
       ...task,
       ...editedTask,
-      updatedAt: new Date().toISOString()
+      labels: editedTask.labels.length > 0 ? editedTask.labels : task.labels,
+      updatedAt: new Date().toISOString(),
     });
     setIsEditing(false);
   };
 
+  const handleLabelChange = (e) => {
+    const labels = e.target.value ? e.target.value.split(',').map((label) => label.trim()) : [];
+    setEditedTask({ ...editedTask, labels });
+  };
+
   return (
-    <div className={`border rounded-lg p-4 shadow-sm transition-shadow relative ${task.isPinned ? 'border-yellow-400 bg-yellow-50' : 'border-gray-200'}`}>
-      {/* View Mode (always visible) */}
+    <div
+      className={`border rounded-lg p-4 shadow-sm transition-shadow relative ${
+        task.isPinned ? 'border-yellow-400 bg-yellow-50' : 'border-gray-200'
+      }`}
+    >
+      {/* View Mode */}
       <div className={`${isEditing ? 'invisible' : 'visible'}`}>
         <div className="flex justify-between items-start">
           <div>
             <h3 className="font-medium text-lg">{task.title}</h3>
             {task.description && (
               <p className="text-gray-600 text-sm mt-1">{task.description}</p>
+            )}
+            {task.assignee && (
+              <p className="text-sm text-gray-500 mt-1">
+                <span className="font-medium">Assignee:</span> {task.assignee}
+              </p>
             )}
           </div>
           {task.isPinned && <span className="text-yellow-500">📌</span>}
@@ -67,11 +85,17 @@ export default function Card({ task, onDelete, onEdit }) {
           ))}
         </div>
 
-        {task.dueDate && (
-          <div className="text-sm text-gray-500 mt-2">
-            <span className="font-medium">Due:</span> {new Date(task.dueDate).toLocaleDateString()}
-          </div>
-        )}
+        <div className="text-sm text-gray-500 mt-2">
+          {task.dueDate && (
+            <p>
+              <span className="font-medium">Due:</span>{' '}
+              {new Date(task.dueDate).toLocaleDateString()}
+            </p>
+          )}
+          <p>
+            <span className="font-medium">Progress:</span> {task.progress}%
+          </p>
+        </div>
 
         <div className="flex justify-between items-center pt-3">
           <div className="text-xs text-gray-400">
@@ -88,15 +112,15 @@ export default function Card({ task, onDelete, onEdit }) {
               onClick={() => onDelete(task.id)}
               className="px-2 py-1 text-red-600 hover:text-red-800 text-sm"
             >
-              Delete
+              <Icon icon="fluent:delete-20-filled" width="20" height="20" />
             </button>
           </div>
         </div>
       </div>
 
-      {/* Edit Mode (absolute positioned overlay) */}
+      {/* Edit Mode */}
       {isEditing && (
-        <div className="absolute h-[450px] inset-0 bg-white rounded-lg p-4 shadow-lg border border-blue-200 z-10">
+        <div className="absolute h-[500px] inset-0 bg-white rounded-lg p-4 shadow-lg border border-blue-200 z-10">
           <div className="space-y-3 h-full flex flex-col">
             <div className="flex-grow space-y-3 overflow-y-auto">
               <div>
@@ -104,8 +128,9 @@ export default function Card({ task, onDelete, onEdit }) {
                 <input
                   type="text"
                   value={editedTask.title}
-                  onChange={(e) => setEditedTask({...editedTask, title: e.target.value})}
+                  onChange={(e) => setEditedTask({ ...editedTask, title: e.target.value })}
                   className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
                 />
               </div>
 
@@ -113,9 +138,19 @@ export default function Card({ task, onDelete, onEdit }) {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                 <textarea
                   value={editedTask.description}
-                  onChange={(e) => setEditedTask({...editedTask, description: e.target.value})}
+                  onChange={(e) => setEditedTask({ ...editedTask, description: e.target.value })}
                   className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                   rows="3"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Assignee</label>
+                <input
+                  type="text"
+                  value={editedTask.assignee}
+                  onChange={(e) => setEditedTask({ ...editedTask, assignee: e.target.value })}
+                  className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -124,11 +159,13 @@ export default function Card({ task, onDelete, onEdit }) {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
                   <select
                     value={editedTask.status}
-                    onChange={(e) => setEditedTask({...editedTask, status: e.target.value})}
+                    onChange={(e) => setEditedTask({ ...editedTask, status: e.target.value })}
                     className="w-full p-2 border rounded"
                   >
-                    {statusOptions.map(option => (
-                      <option key={option} value={option}>{option}</option>
+                    {statusOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -137,11 +174,13 @@ export default function Card({ task, onDelete, onEdit }) {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
                   <select
                     value={editedTask.priority}
-                    onChange={(e) => setEditedTask({...editedTask, priority: e.target.value})}
+                    onChange={(e) => setEditedTask({ ...editedTask, priority: e.target.value })}
                     className="w-full p-2 border rounded"
                   >
-                    {priorityOptions.map(option => (
-                      <option key={option} value={option}>{option}</option>
+                    {priorityOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -152,9 +191,44 @@ export default function Card({ task, onDelete, onEdit }) {
                 <input
                   type="date"
                   value={editedTask.dueDate}
-                  onChange={(e) => setEditedTask({...editedTask, dueDate: e.target.value})}
+                  onChange={(e) => setEditedTask({ ...editedTask, dueDate: e.target.value })}
                   className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Labels</label>
+                <input
+                  type="text"
+                  value={editedTask.labels.join(', ')}
+                  onChange={handleLabelChange}
+                  className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter labels (comma-separated)"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Progress (%)</label>
+                <input
+                  type="number"
+                  value={editedTask.progress}
+                  onChange={(e) =>
+                    setEditedTask({ ...editedTask, progress: parseInt(e.target.value) || 0 })
+                  }
+                  min="0"
+                  max="100"
+                  className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={editedTask.isPinned}
+                  onChange={(e) => setEditedTask({ ...editedTask, isPinned: e.target.checked })}
+                  className="h-4 w-4 text-blue-600"
+                />
+                <label className="ml-2 text-sm font-medium text-gray-700">Pin Task</label>
               </div>
             </div>
 
